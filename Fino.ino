@@ -30,7 +30,7 @@ bool is_connected = false;
 bool forces_requested = false;
 bool pos_updated = false;
 
-int16_t pos[2] = {0, 0};
+int16_t pos[2] = { 0, 0 };
 int lastX;
 int lastY;
 int lastVelX;
@@ -39,61 +39,61 @@ int lastAccelX;
 int lastAccelY;
 
 EffectParams effects[2];
-int32_t forces[2] = {0, 0};
+int32_t forces[2] = { 0, 0 };
 
 Joystick_ Joystick(
-    JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK,
-    19, 2, // Button Count, Hat Switch Count
-    true, true, false, // X, Y, Z
-    false, false, false, // Rx, Ry, Rz
-    true, true, // rudder, throttle
-    false, false, false); // accelerator, brake, steering
+  JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK,
+  19, 2,                 // Button Count, Hat Switch Count
+  true, true, false,     // X, Y, Z
+  false, false, false,   // Rx, Ry, Rz
+  true, true,            // rudder, throttle
+  false, false, false);  // accelerator, brake, steering
 
 void setup() {
 
-    setupJoystick();
+  setupJoystick();
 
-    // setup communication
-    #ifdef COMINO
-    Serial.begin(SERIAL_BAUD);
-    #endif
-    // SerialUSB.begin(115200);
-    
-    // setup timing and run them as soon as possible
-    lastEffectsUpdate = 0;
-    nextJoystickMillis = 0;
-    nextEffectsMillis = 0;
+// setup communication
+#ifdef COMINO
+  Serial.begin(SERIAL_BAUD);
+#endif
+  // SerialUSB.begin(115200);
+
+  // setup timing and run them as soon as possible
+  lastEffectsUpdate = 0;
+  nextJoystickMillis = 0;
+  nextEffectsMillis = 0;
 }
 
-void loop(){
-    #ifdef COMINO
-    get_messages_from_serial();
-    #endif
+void loop() {
+#ifdef COMINO
+  get_messages_from_serial();
+#endif
 
-    unsigned long currentMillis;
-    currentMillis = millis();
-    // do not run more frequently than these many milliseconds
-    if (currentMillis >= nextJoystickMillis) {
-        updateJoystickPos();
-        nextJoystickMillis = currentMillis + 2;
+  unsigned long currentMillis;
+  currentMillis = millis();
+  // do not run more frequently than these many milliseconds
+  if (currentMillis >= nextJoystickMillis) {
+    updateJoystickPos();
+    nextJoystickMillis = currentMillis + 2;
 
-        // we calculate condition forces every 100ms or more frequently if we get position updates
-        if (currentMillis >= nextEffectsMillis || pos_updated) {
-            updateEffects(true);
-            nextEffectsMillis = currentMillis + 100;
-            pos_updated = false;
-        } else {
-            // calculate forces without recalculating condition forces
-            // this helps having smoother spring/damper/friction
-            // if our update rate matches our input device
-            updateEffects(false);
-        }
-
-        #ifdef COMINO
-        if (forces_requested) {
-            sendForces();
-            forces_requested = false;
-        }
-        #endif
+    // we calculate condition forces every 100ms or more frequently if we get position updates
+    if (currentMillis >= nextEffectsMillis || pos_updated) {
+      updateEffects(true);
+      nextEffectsMillis = currentMillis + 100;
+      pos_updated = false;
+    } else {
+      // calculate forces without recalculating condition forces
+      // this helps having smoother spring/damper/friction
+      // if our update rate matches our input device
+      updateEffects(false);
     }
+
+#ifdef COMINO
+    if (forces_requested) {
+      sendForces();
+      forces_requested = false;
+    }
+#endif
+  }
 }
